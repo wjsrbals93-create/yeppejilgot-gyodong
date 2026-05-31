@@ -161,18 +161,50 @@ const selected = { service: new Set(), detail: new Set(), satisfy: new Set() };
 let selectedTeacher = '';
 let lastIndices = [];
 
-const REVIEW_TEMPLATES = [
-  '{teacher}한테 {service} 받았는데 너무 만족스러웠어요. {satisfy} 앞으로도 꾸준히 관리 받고 싶어요.',
-  '{teacher} 덕분에 {service} 결과가 너무 마음에 들었어요. {satisfy} 믿고 맡길 수 있는 곳이에요.',
-  '오늘 {teacher}한테 {service} 관리 받았어요. {satisfy} 다음 예약도 바로 잡았습니다.',
-  '{teacher}한테 {service} 맡겼는데 정말 잘 나왔어요. {satisfy} 매번 이 분한테만 받고 싶을 정도예요.',
-  '{service} 관리 받으러 왔다가 완전 만족하고 갑니다. {teacher}이 꼼꼼하게 챙겨주시고 {satisfy}',
-  '{teacher} 정말 실력 있으세요. {service} 받고 나서 {satisfy} 주변에도 적극 추천하고 있어요.',
-  '{teacher}한테 {service} 받았어요. {satisfy} 매장도 항상 위생적으로 관리되어 있어서 믿음이 가요.',
-  '처음 방문했는데 {teacher}이 친절하게 상담해 주셨어요. {service} 받고 나서 {satisfy} 완전 만족이에요.',
-  '{teacher} 덕분에 {service} 퀄리티가 기대 이상이었어요. {satisfy} 역시 잘 오길 잘했어요.',
-  '{service} 관리를 {teacher}한테 받았는데 {satisfy} 앞으로도 꾸준히 다닐 것 같아요.',
+const PERSONA_A = [
+  '{teacher}께 {service} {detail} 받았는데 진짜 대박이에요!! 🩷 {satisfy} 이런 곳을 왜 이제야 알았을까요ㅠㅠ 앞으로 무조건 여기만 올 것 같아요!',
+  '세상에 {detail} 이렇게 예쁘게 해주시는 분은 {teacher}밖에 없는 것 같아요🥹 {satisfy} 손 자꾸 들여다보게 되는 마법..✨',
+  '{teacher}께 {service} {detail} 받았어요💅 {satisfy} 진짜 올 때마다 감동받고 가요ㅠㅠ 너무 예뻐서 사진만 100장 찍었어요!',
 ];
+
+const PERSONA_B = [
+  '{teacher}께 {service} {detail} 케어를 받았습니다. {satisfy} 시술 내내 꼼꼼하게 챙겨주셔서 신뢰가 갔고, 결과물도 기대 이상이었어요. 앞으로도 꾸준히 방문할 것 같습니다.',
+  '위생과 관리 퀄리티를 꼼꼼히 따지는 편인데 {teacher}께 {service} {detail} 받고 완전히 만족했어요. {satisfy} 이런 곳이 진짜 단골 만드는 샵이라고 생각해요.',
+  '{teacher}께 {service} {detail} 받았습니다. {satisfy} 기술도 기술이지만 고객 손톱 상태까지 세심하게 체크해 주셔서 더 믿음이 갔어요.',
+];
+
+const PERSONA_C = [
+  '{teacher}께 {service} {detail} 받았어요. 상담부터 시술까지 빠르고 정확하게 진행해 주셔서 너무 좋았어요. {satisfy} 트렌드도 딱 잘 알고 계셔서 믿고 맡길 수 있었어요.',
+  '{detail} 고민하다가 {teacher}께 맡겼는데 찰떡같이 알아듣고 원하는 스타일로 완성해 주셨어요. {satisfy} 시간도 효율적으로 쓰고 결과도 완벽했어요.',
+  '{teacher}께 {service} {detail} 받았는데 요즘 트렌드 정말 잘 아시더라고요. {satisfy} 상담 시간도 짧았는데 제 취향을 완벽하게 파악하셨어요.',
+];
+
+const PERSONA_D = [
+  '여러 네일샵을 다녀봤는데 {teacher}께 {service} {detail} 받고 드디어 단골 샵을 찾은 것 같아요. {satisfy} 이제 여기 말고는 못 갈 것 같아요.',
+  '솔직히 네일샵 찾는 게 너무 힘들었는데 {teacher}께 {service} {detail} 받고 나서 바로 다음 예약 잡았어요. {satisfy} 진짜 오래 찾던 곳 드디어 찾은 느낌이에요.',
+  '여기저기 다니다가 {teacher}를 만났는데 {service} {detail} 결과 보고 바로 단골 결정했어요. {satisfy} 더 이상 샵 탐방 안 해도 될 것 같아요.',
+];
+
+const ENDINGS = [
+  "대구 교동 네일샵을 찾고 계신다면 예뻐질곧 교동점을 강력히 추천드립니다.",
+  "네일 케어 고민이시라면 예뻐질곧 교동점에서 직접 경험해 보시길 권해드립니다.",
+  "교동네일샵 예뻐질곧 교동점, 한 번 방문하시면 단골이 되실 거예요.",
+  "대구네일샵 중에서도 예뻐질곧 교동점은 퀄리티와 서비스 모두 믿을 수 있는 곳입니다.",
+  "꼼꼼하고 전문적인 케어를 원하신다면 예뻐질곧 교동점을 추천드립니다."
+];
+
+const satisfyMap = {
+  '디자인이 예뻐요': '디자인이 너무 예뻐요.',
+  '섬세하고 정교해요': '섬세하고 정교해요.',
+  '재료가 엄청많아요': '재료 종류도 엄청 많아요.',
+  '오래 유지돼요': '유지력도 정말 오래가요.',
+  '친절하고 꼼꼼해요': '친절하고 꼼꼼해요.',
+  '상담을 잘 해줘요': '상담도 잘 해줘요.',
+  '빠르고 정확해요': '빠르고 정확해요.',
+  '매장이 깔끔해요': '매장도 너무 깔끔해요.',
+  '위생적이에요': '위생적으로 관리되어 있어요.',
+  '재방문 의사 있어요': '또 방문하고 싶어요.',
+};
 
 function toggleTag(btn, cat) {
   const val = btn.textContent.trim();
@@ -190,58 +222,42 @@ function selectTeacher(btn, name) {
 }
 
 function checkReady() {
-  const hasService = selected.service.size > 0 || selected.detail.size > 0;
-  document.getElementById('generate-btn').disabled = !(selectedTeacher && (hasService || selected.satisfy.size > 0));
+  const hasContent = selected.service.size > 0 || selected.detail.size > 0 || selected.satisfy.size > 0;
+  document.getElementById('generate-btn').disabled = !(selectedTeacher && hasContent);
 }
 
-function buildReviewText(template) {
-  const allServices = [...selected.service, ...selected.detail];
+function selectPersona() {
+  const details = [...selected.detail];
   const satisfies = [...selected.satisfy];
+  const isArt = details.some(d => ['아트', '글리터', '그라데이션', '파우더'].includes(d));
+  const isCare = details.some(d => ['케어', '제거만', '투명젤'].includes(d)) ||
+    satisfies.some(s => ['위생적이에요', '친절하고 꼼꼼해요', '오래 유지돼요'].includes(s));
+  const isTrendy = details.some(d => ['자석', '파우더', '그라데이션'].includes(d)) ||
+    satisfies.some(s => ['빠르고 정확해요', '상담을 잘 해줘요'].includes(s));
+  if (isArt) return PERSONA_A;
+  if (isCare) return PERSONA_B;
+  if (isTrendy) return PERSONA_C;
+  return PERSONA_D;
+}
 
-  const serviceText = allServices.length > 0
-    ? allServices.join(', ')
-    : '네일 관리';
-
-  const satisfyMap = {
-    '디자인이 예뻐요': '디자인이 너무 예뻐요.',
-    '섬세하고 정교해요': '섬세하고 정교해요.',
-    '재료가 엄청많아요': '재료 종류도 엄청 많아요.',
-    '오래 유지돼요': '유지력도 정말 오래가요.',
-    '친절하고 꼼꼼해요': '친절하고 꼼꼼해요.',
-    '상담을 잘 해줘요': '상담도 잘 해줘요.',
-    '빠르고 정확해요': '빠르고 정확해요.',
-    '매장이 깔끔해요': '매장도 너무 깔끔해요.',
-    '위생적이에요': '위생적으로 관리되어 있어요.',
-    '재방문 의사 있어요': '또 방문하고 싶어요.',
-  };
-
+function buildReview() {
+  const serviceText = [...selected.service].join(', ') || '네일';
+  const detailText = [...selected.detail].join(', ') || serviceText;
+  const satisfies = [...selected.satisfy];
   const satisfyText = satisfies.length > 0
     ? satisfies.map(s => satisfyMap[s] || s).join(' ')
     : '만족스러웠어요.';
 
-  const endings = [
-    "대구네일샵 예뻐질곧 교동점 강추드립니다!",
-    "교동 네일샵 찾으신다면 예뻐질곧 교동점 추천해요!",
-    "대구동성로네일샵 예뻐질곧 교동점 강력 추천해요!",
-    "예뻐질곧 교동점 앞으로도 계속 올게요!",
-    "예뻐질곧 교동점 다음 예약도 바로 잡았습니다!"
-  ];
-  const ending = endings[Math.floor(Math.random() * endings.length)];
+  const persona = selectPersona();
+  const template = persona[Math.floor(Math.random() * persona.length)];
+  const ending = ENDINGS[Math.floor(Math.random() * ENDINGS.length)];
 
-  const base = template
+  return template
     .replace(/{teacher}/g, selectedTeacher)
     .replace(/{service}/g, serviceText)
-    .replace(/{satisfy}/g, satisfyText);
-
-  return base + ' ' + ending;
-}
-
-function getThreeTemplates() {
-  const available = REVIEW_TEMPLATES.map((_,i) => i).filter(i => !lastIndices.includes(i));
-  const source = available.length >= 3 ? available : REVIEW_TEMPLATES.map((_,i) => i);
-  const shuffled = [...source].sort(() => Math.random() - 0.5);
-  lastIndices = shuffled.slice(0, 3);
-  return lastIndices.map(i => REVIEW_TEMPLATES[i]);
+    .replace(/{detail}/g, detailText)
+    .replace(/{satisfy}/g, satisfyText)
+    + ' ' + ending;
 }
 
 function showReviews() {
@@ -252,9 +268,8 @@ function showReviews() {
   const allTags = [selectedTeacher, ...selected.service, ...selected.detail, ...selected.satisfy];
   document.getElementById('selected-summary').innerHTML = allTags.map(t => `<span class="selected-tag">${t}</span>`).join('');
 
-  const templates = getThreeTemplates();
-  cards.innerHTML = templates.map((tpl, idx) => {
-    const text = buildReviewText(tpl);
+  cards.innerHTML = [0,1,2].map(idx => {
+    const text = buildReview();
     return `
       <div class="review-card">
         <div class="review-header">
