@@ -121,9 +121,10 @@
     <div class="step-header">
       <div class="step-num">3</div>
       <span class="step-title">만족스러웠던 점을 선택해 주세요</span>
-      <span class="step-hint">복수 선택 가능</span>
+      <span class="step-hint">최대 3개</span>
+      <span id="satisfy-counter" style="font-size:11px;font-weight:600;color:#bbb;margin-left:auto;">0/3</span>
     </div>
-    <div class="tag-wrap">
+    <div class="tag-wrap" id="satisfy-wrap">
       <button class="tag-btn" onclick="toggleTag(this,'satisfy')">디자인이 예뻐요</button>
       <button class="tag-btn" onclick="toggleTag(this,'satisfy')">섬세하고 정교해요</button>
       <button class="tag-btn" onclick="toggleTag(this,'satisfy')">재료가 엄청많아요</button>
@@ -136,6 +137,8 @@
       <button class="tag-btn" onclick="toggleTag(this,'satisfy')">재방문 의사 있어요</button>
     </div>
   </div>
+
+  <p id="satisfy-limit-msg" style="display:none;font-size:12px;color:#D4537E;text-align:center;margin-top:8px;">최대 3개까지만 선택할 수 있어요!</p>
 
   <div class="divider"></div>
 
@@ -159,30 +162,33 @@
 <script>
 const selected = { service: new Set(), detail: new Set(), satisfy: new Set() };
 let selectedTeacher = '';
-let lastIndices = [];
 
+// 페르소나 A: 감성/열성팬 - 아트, 글리터, 그라데이션, 파우더
 const PERSONA_A = [
-  '{teacher}께 {service} {detail} 받았는데 진짜 대박이에요!! 🩷 {satisfy} 이런 곳을 왜 이제야 알았을까요ㅠㅠ 앞으로 무조건 여기만 올 것 같아요!',
-  '세상에 {detail} 이렇게 예쁘게 해주시는 분은 {teacher}밖에 없는 것 같아요🥹 {satisfy} 손 자꾸 들여다보게 되는 마법..✨',
-  '{teacher}께 {service} {detail} 받았어요💅 {satisfy} 진짜 올 때마다 감동받고 가요ㅠㅠ 너무 예뻐서 사진만 100장 찍었어요!',
+  '{teacher}께 {service} {detail} 받았는데 결과가 너무 예뻐서 손 보여주고 싶어서 미칠 것 같아요🩷 {satisfy_natural} 진짜 올 때마다 감동받고 가는 곳이에요.',
+  '세상에 {detail} 이렇게 완성도 높게 해주시는 분이 있다니요🥹 {teacher}께 받은 {service} 진짜 최고예요. {satisfy_natural}',
+  '{teacher}께 {service} {detail} 받았어요✨ {satisfy_natural} 사진 찍느라 한참 있었어요ㅠㅠ 강력 추천합니다!',
 ];
 
+// 페르소나 B: 꼼꼼/실용파 - 케어, 위생, 꼼꼼함, 유지력
 const PERSONA_B = [
-  '{teacher}께 {service} {detail} 케어를 받았습니다. {satisfy} 시술 내내 꼼꼼하게 챙겨주셔서 신뢰가 갔고, 결과물도 기대 이상이었어요. 앞으로도 꾸준히 방문할 것 같습니다.',
-  '위생과 관리 퀄리티를 꼼꼼히 따지는 편인데 {teacher}께 {service} {detail} 받고 완전히 만족했어요. {satisfy} 이런 곳이 진짜 단골 만드는 샵이라고 생각해요.',
-  '{teacher}께 {service} {detail} 받았습니다. {satisfy} 기술도 기술이지만 고객 손톱 상태까지 세심하게 체크해 주셔서 더 믿음이 갔어요.',
+  '{teacher}께 {service} {detail} 케어를 받았습니다. {satisfy_natural} 이런 섬세함과 전문성이라면 앞으로도 믿고 맡길 수 있을 것 같아요.',
+  '위생과 퀄리티를 꼼꼼히 따지는 편인데 {teacher}께 {service} {detail} 받고 완전히 만족했어요. {satisfy_natural} 진짜 단골 만드는 샵이에요.',
+  '{teacher}께 {service} {detail} 받았습니다. {satisfy_natural} 고객 입장에서 이것저것 세심하게 챙겨주셔서 신뢰가 갔어요.',
 ];
 
+// 페르소나 C: 트렌디/효율파 - 자석, 파우더, 빠르고 정확, 상담
 const PERSONA_C = [
-  '{teacher}께 {service} {detail} 받았어요. 상담부터 시술까지 빠르고 정확하게 진행해 주셔서 너무 좋았어요. {satisfy} 트렌드도 딱 잘 알고 계셔서 믿고 맡길 수 있었어요.',
-  '{detail} 고민하다가 {teacher}께 맡겼는데 찰떡같이 알아듣고 원하는 스타일로 완성해 주셨어요. {satisfy} 시간도 효율적으로 쓰고 결과도 완벽했어요.',
-  '{teacher}께 {service} {detail} 받았는데 요즘 트렌드 정말 잘 아시더라고요. {satisfy} 상담 시간도 짧았는데 제 취향을 완벽하게 파악하셨어요.',
+  '{teacher}께 {service} {detail} 받았어요. {satisfy_natural} 상담부터 시술까지 막힘 없이 진행되는 게 너무 좋았어요.',
+  '{detail} 고민하다가 {teacher}께 맡겼는데 제 취향을 딱 파악하고 원하는 스타일로 완성해 주셨어요. {satisfy_natural}',
+  '{teacher}께 {service} {detail} 받았는데 트렌드도 잘 알고 계시고 {satisfy_natural} 다음 예약도 바로 잡았어요.',
 ];
 
+// 페르소나 D: 신규 정착 유입
 const PERSONA_D = [
-  '여러 네일샵을 다녀봤는데 {teacher}께 {service} {detail} 받고 드디어 단골 샵을 찾은 것 같아요. {satisfy} 이제 여기 말고는 못 갈 것 같아요.',
-  '솔직히 네일샵 찾는 게 너무 힘들었는데 {teacher}께 {service} {detail} 받고 나서 바로 다음 예약 잡았어요. {satisfy} 진짜 오래 찾던 곳 드디어 찾은 느낌이에요.',
-  '여기저기 다니다가 {teacher}를 만났는데 {service} {detail} 결과 보고 바로 단골 결정했어요. {satisfy} 더 이상 샵 탐방 안 해도 될 것 같아요.',
+  '여러 곳 다녀봤는데 {teacher}께 {service} {detail} 받고 드디어 제 네일샵을 찾은 것 같아요. {satisfy_natural} 이제 여기 말고는 못 갈 것 같아요.',
+  '솔직히 마음에 드는 샵 찾기가 쉽지 않았는데 {teacher}께 {service} {detail} 받고 나서 바로 단골 결정했어요. {satisfy_natural}',
+  '{teacher}를 만나고 나서야 네일 받는 게 이렇게 즐거운 거였구나 싶었어요. {service} {detail} 결과도 {satisfy_natural} 진짜 잘 찾아왔어요.',
 ];
 
 const ENDINGS = [
@@ -193,31 +199,82 @@ const ENDINGS = [
   "꼼꼼하고 전문적인 케어를 원하신다면 예뻐질곧 교동점을 추천드립니다."
 ];
 
-const satisfyMap = {
-  '디자인이 예뻐요': '디자인이 너무 예뻐요.',
-  '섬세하고 정교해요': '섬세하고 정교해요.',
-  '재료가 엄청많아요': '재료 종류도 엄청 많아요.',
-  '오래 유지돼요': '유지력도 정말 오래가요.',
-  '친절하고 꼼꼼해요': '친절하고 꼼꼼해요.',
-  '상담을 잘 해줘요': '상담도 잘 해줘요.',
-  '빠르고 정확해요': '빠르고 정확해요.',
-  '매장이 깔끔해요': '매장도 너무 깔끔해요.',
-  '위생적이에요': '위생적으로 관리되어 있어요.',
-  '재방문 의사 있어요': '또 방문하고 싶어요.',
-};
+// 만족도 키워드를 자연스러운 문장으로 변환 (최대 2개만 활용)
+function buildSatisfyNatural(satisfies) {
+  const satisfyPhrases = {
+    '디자인이 예뻐요': '디자인이 너무 마음에 들었고',
+    '섬세하고 정교해요': '섬세하고 정교한 마무리에 감동받았어요.',
+    '재료가 엄청많아요': '재료 종류가 정말 다양해서 원하는 디자인을 다 고를 수 있었어요.',
+    '오래 유지돼요': '유지력도 정말 좋아서 2주가 지나도 깔끔해요.',
+    '친절하고 꼼꼼해요': '처음부터 끝까지 친절하고 꼼꼼하게 케어해 주셨어요.',
+    '상담을 잘 해줘요': '상담을 정말 잘 해주셔서 고르는 과정도 즐거웠어요.',
+    '빠르고 정확해요': '시술이 빠르고 정확해서 시간도 아끼고 결과도 완벽했어요.',
+    '매장이 깔끔해요': '매장이 깔끔하고 분위기도 너무 좋았어요.',
+    '위생적이에요': '위생 관리가 철저해서 믿고 받을 수 있었어요.',
+    '재방문 의사 있어요': '다음 예약도 바로 잡을 만큼 만족스러웠어요.',
+  };
+
+  if (satisfies.length === 0) return '정말 만족스러웠어요.';
+  
+  // 최대 2개만 자연스럽게 선택
+  const picked = satisfies.slice(0, 2);
+  if (picked.length === 1) {
+    return satisfyPhrases[picked[0]] || picked[0];
+  }
+  // 2개일 때 자연스럽게 연결
+  const first = (satisfyPhrases[picked[0]] || picked[0]).replace(/[.!]$/, '');
+  const second = satisfyPhrases[picked[1]] || picked[1];
+  return first + ', ' + second;
+}
 
 function toggleTag(btn, cat) {
   const val = btn.textContent.trim();
-  if (selected[cat].has(val)) { selected[cat].delete(val); btn.classList.remove('selected'); }
-  else { selected[cat].add(val); btn.classList.add('selected'); }
+  if (selected[cat].has(val)) {
+    selected[cat].delete(val);
+    btn.classList.remove('selected');
+  } else {
+    if (cat === 'satisfy' && selected[cat].size >= 3) {
+      showSatisfyLimit();
+      return;
+    }
+    selected[cat].add(val);
+    btn.classList.add('selected');
+  }
+  updateSatisfyCounter();
   checkReady();
+}
+
+function updateSatisfyCounter() {
+  const counter = document.getElementById('satisfy-counter');
+  if (counter) {
+    const count = selected.satisfy.size;
+    counter.textContent = count + '/3';
+    counter.style.color = count >= 3 ? '#D4537E' : '#bbb';
+  }
+  // 3개 선택 시 미선택 버튼 흐리게
+  document.querySelectorAll('#satisfy-wrap .tag-btn').forEach(btn => {
+    if (!btn.classList.contains('selected')) {
+      btn.style.opacity = selected.satisfy.size >= 3 ? '0.35' : '1';
+      btn.style.cursor = selected.satisfy.size >= 3 ? 'not-allowed' : 'pointer';
+    } else {
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    }
+  });
+}
+
+function showSatisfyLimit() {
+  const msg = document.getElementById('satisfy-limit-msg');
+  if (msg) {
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; }, 2000);
+  }
 }
 
 function selectTeacher(btn, name) {
   document.querySelectorAll('.teacher-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   selectedTeacher = name;
-  lastIndices = [];
   checkReady();
 }
 
@@ -244,9 +301,7 @@ function buildReview() {
   const serviceText = [...selected.service].join(', ') || '네일';
   const detailText = [...selected.detail].join(', ') || serviceText;
   const satisfies = [...selected.satisfy];
-  const satisfyText = satisfies.length > 0
-    ? satisfies.map(s => satisfyMap[s] || s).join(' ')
-    : '만족스러웠어요.';
+  const satisfyNatural = buildSatisfyNatural(satisfies);
 
   const persona = selectPersona();
   const template = persona[Math.floor(Math.random() * persona.length)];
@@ -256,7 +311,7 @@ function buildReview() {
     .replace(/{teacher}/g, selectedTeacher)
     .replace(/{service}/g, serviceText)
     .replace(/{detail}/g, detailText)
-    .replace(/{satisfy}/g, satisfyText)
+    .replace(/{satisfy_natural}/g, satisfyNatural)
     + ' ' + ending;
 }
 
